@@ -1,1 +1,2 @@
 # No external dependencies required for this project.
+# All functionality is provided by the Python Standard Library.
