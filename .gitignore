@@ -1,0 +1,20 @@
+# Python bytecode and cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Системные файлы ОС и IDE (VS Code / PyCharm / Vim)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Данные приложения (историю обычно не хранят в репозитории Git)
+expenses.json
+
+# Логи выполнения (если будут создаваться)
+*.log
+
+# Файлы сборки/дистрибуции (если будут использоваться)
+dist/
+build/
