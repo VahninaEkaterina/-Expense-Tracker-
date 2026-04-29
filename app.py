@@ -2,22 +2,35 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import json
 import datetime
+import uuid
 
 DATA_FILE = "expenses.json"
 CATEGORIES = ["Еда", "Транспорт", "Развлечения", "Быт", "Здоровье", "Другое"]
 
 def load_data():
+    """Загружает данные из JSON-файла с обработкой ошибок."""
     try:
         with open(DATA_FILE, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
+    except json.JSONDecodeError:
+        messagebox.showerror("Ошибка данных", "Файл данных повреждён. Будет создан новый файл.")
+        return []
+    except IOError as e:
+        messagebox.showerror("Ошибка ввода-вывода", f"Не удалось прочитать файл: {e}")
+        return []
 
 def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+    """Сохраняет данные в JSON-файл с обработкой ошибок."""
+    try:
+        with open(DATA_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+    except IOError as e:
+        messagebox.showerror("Ошибка записи", f"Не удалось сохранить данные: {e}")
 
 def validate_amount(amount_str):
+    """Проверяет, что сумма — положительное число."""
     try:
         amount = float(amount_str)
         if amount <= 0:
@@ -27,6 +40,7 @@ def validate_amount(amount_str):
         raise ValueError("Введите корректную сумму (положительное число).")
 
 def validate_date(date_str):
+    """Проверяет, что дата в формате ГГГГ-ММ-ДД."""
     try:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
@@ -80,9 +94,9 @@ class ExpenseTrackerApp:
         self.apply_filter_btn.grid(row=3, column=0, columnspan=2, pady=(5, 2))
 
          # --- Таблица расходов ---
-        cols = ("id", "Дата", "Категория", "Сумма")
-        self.tree = ttk.Treeview(root, columns=cols, show="headings")
-        
+         cols = ("id", "Дата", "Категория", "Сумма")
+         self.tree = ttk.Treeview(root, columns=cols, show="headings")
+         
          # Настройка ширины колонок
          self.tree.column("id", width=30)
          self.tree.column("Дата", width=120)
@@ -92,7 +106,7 @@ class ExpenseTrackerApp:
          for col in cols:
              self.tree.heading(col, text=["ID", "Дата", "Категория", "Сумма"][cols.index(col)])
          
-        self.tree.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="we")
+         self.tree.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="we")
 
          # --- Подсчёт суммы ---
          self.sum_label = ttk.Label(root, text="Сумма расходов: 0.00 ₽")
@@ -108,7 +122,7 @@ class ExpenseTrackerApp:
              date = validate_date(self.date_entry.get())
 
              expense = {
-                 "id": len(self.data) + 1,
+                 "id": str(uuid.uuid4()), # Генерация уникального ID
                  "date": date.isoformat(),
                  "category": category,
                  "amount": amount
@@ -153,7 +167,7 @@ class ExpenseTrackerApp:
          for e in filtered:
              self.tree.insert("", "end", values=(e["id"], e["date"], e["category"], f"{e['amount']:.2f} ₽"))
 
-         total = sum(e["amount"] for e in filtered)
+         total = sum(e['amount'] for e in filtered)
          self.sum_label.config(text=f"Сумма расходов: {total:.2f} ₽")
 
     def apply_filter(self):
